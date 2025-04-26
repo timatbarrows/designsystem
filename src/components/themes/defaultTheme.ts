@@ -1,0 +1,72 @@
+// themes/defaultTheme.ts
+import { Theme } from './Theme';
+
+export const defaultTheme: Theme = {
+  CheckBox: {
+    wrapper: 'mb-6',
+    row: 'flex flex-row items-center gap-2',
+    label: 'text-[14px] text-slate-600 font-roboto text-center md:text-left',
+    labelWrapper: 'mt-1',
+    input: 'appearance-none w-5 h-5 border border-slate-300 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed scale-[1.1] bg-white checked:bg-blue-600 relative',
+    invalid: 'ring-2 ring-red-500',
+    checkmark: 'absolute top-[-4px] left-[-2px] w-7 h-7 pointer-events-none',
+  },
+  Toggle: {
+    wrapper: 'mb-6',
+    row: 'flex items-center gap-2',
+    label: 'text-[14px] text-slate-600 font-roboto',
+    labelWrapper: 'mb-1',
+    toggle: 'relative inline-block w-12 h-6 rounded-full transition-colors duration-300 cursor-pointer',
+    handle: 'absolute left-0 top-0 w-6 h-6 bg-white rounded-full transition-transform duration-300 transform',
+  },
+  RadioButton: {
+    wrapper: 'mb-6',
+    row: 'flex flex-row items-center gap-2',
+    label: 'text-[14px] text-slate-600 font-roboto text-center md:text-left',
+    labelWrapper: 'mt-1',
+    input: 'appearance-none w-5 h-5 border border-slate-300 rounded-full checked:bg-blue-600 checked:border-transparent disabled:opacity-50 disabled:cursor-not-allowed scale-[1]',
+    invalid: 'ring-2 ring-red-500',
+  },
+  Input: {
+    wrapper: "mb-6",
+    row: "flex items-center gap-2",
+    label: "text-[14px] text-slate-600 uppercase font-regular font-roboto mb-2",
+    labelWrapper: "mb-1",
+    input: "border bg-white text-[16px] text-slate-500 font-roboto placeholder-slate-300 px-4 py-4 rounded-md focus:outline-none focus:ring-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed w-full",
+  },
+  TextArea: {
+    wrapper: 'mb-6',
+    row: 'flex items-start gap-2',
+    label: 'text-[14px] text-slate-600 uppercase font-regular font-roboto mb-2',
+    labelWrapper: 'mb-1',
+    textarea: 'border bg-white text-[16px] text-slate-500 font-roboto placeholder-slate-300 px-4 py-4 rounded-md focus:outline-none focus:ring-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed w-full',
+  },
+  CodeBlock: {
+    container: 'my-6 rounded-md overflow-hidden border border-blue-950 bg-blue-950',
+    title: 'px-4 py-2 text-sm font-medium text-blue-100 bg-blue-900 border-b border-blue-800 flex items-center justify-between',
+    code: 'bg-blue-950 px-4 py-3 text-sm text-blue-200 overflow-x-auto whitespace-pre-wrap font-mono w-full resize-none',
+  },
+  Button: {
+    base: 'flex items-center justify-center text-white font-roboto px-4 py-2 focus:outline-none transition-colors duration-300 cursor-pointer',
+    rectangle: 'rounded-md',
+    circle: 'rounded-full p-2',
+    pill: 'rounded-full px-6',
+    active: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800',
+    disabled: 'opacity-50 cursor-not-allowed',
+    content: 'flex items-center gap-2',
+    materialSymbol: 'material-symbols-outlined text-white text-[20px]', 
+  },
+  DatePicker: {
+    wrapper: 'relative flex items-center gap-2 mb-6',
+    input: 'border bg-white text-[16px] text-slate-500 font-roboto placeholder-slate-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed w-full',
+    iconWrapper: 'cursor-pointer flex items-center',
+    calendar: 'grid grid-cols-7 gap-2 p-2',
+    popup: 'absolute top-full mt-2 w-[280px] bg-white border rounded-md shadow-md z-50 p-4',
+    day: 'w-8 h-8 flex items-center justify-center rounded hover:bg-blue-100 text-slate-600 cursor-pointer',
+    daySelected: 'bg-blue-600 text-white',
+    dayDisabled: 'opacity-30 cursor-not-allowed',
+    footer: 'flex justify-between mt-4',
+    todayButton: 'text-blue-600 hover:underline text-sm',
+    clearButton: 'text-slate-500 hover:underline text-sm',
+  },  
+};

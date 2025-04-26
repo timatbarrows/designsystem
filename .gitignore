@@ -1,0 +1,36 @@
+# Node dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE/editor settings
+.idea/
+.vscode/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# npm & yarn (adjust depending on tool)
+# Ignore pnpm lockfile if not using pnpm
+pnpm-lock.yaml
+
+# Storybook (future-proof)
+storybook-static/
+
+# Misc
+*.tgz
