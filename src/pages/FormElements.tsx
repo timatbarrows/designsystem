@@ -376,6 +376,23 @@ export const DatePickerContent: React.FC = () => {
 />
   `}
 </CodeBlock>
+<div className={`${Styles.h2} mb-4`}>Quick Selects</div>
+<DatePicker
+        mode="range"
+        placeholder="Select a date range"
+        quickSelects={['lastWeek', 'thisWeek', 'lastMonth']}
+        showClearButton={false}
+      />
+<CodeBlock title='Date Range With Quick Selects'>
+    {
+        `<DatePicker
+        mode="range"
+        placeholder="Select a date range"
+        quickSelects={['lastWeek', 'thisWeek', 'lastMonth']}
+        showClearButton
+      />`
+    }
+</CodeBlock>
 <div className={`${Styles.h2} mb-4`}>Date Picker Icon (Material Symbol)</div>
 <DatePicker
   mode="single"
@@ -391,18 +408,44 @@ export const DatePickerContent: React.FC = () => {
   mode="single"
   value=""
   showInput={false}
-  icon="event"
+  icon="calendar_month"
   iconType="material"
   onChange={(val) => console.log('Selected date:', val)}
 />
   `}
 </CodeBlock>
+<div className={`${Styles.h2} mb-4`}>Input Icon</div>
+<DatePicker
+  mode="range"
+  value={{ start: '', end: '' }}
+  onChange={(val) => console.log(val)}
+  placeholder="Select date range"
+  icon="date_range"
+  iconType="material"
+  showInput={true}
+  iconInputPosition="end"
+/>
+<CodeBlock title='Icon and Input'>{`
+<DatePicker
+  mode="range"
+  value={{ start: '', end: '' }}
+  onChange={(val) => console.log(val)}
+  placeholder="Select date range"
+  icon="date_range"
+  iconType="material"
+  showInput={true}
+  iconInputPosition="end"
+/>
+
+`}</CodeBlock>
 <div className={`${Styles.h2} mb-4`}>Blocked Dates</div>
 <DatePicker
   mode="single"
   value=""
   minDate="2025-05-01"
   maxDate="2025-7-31"
+  icon="calendar_month"
+  iconType="material"
   onChange={(val) => console.log('Selected date within range:', val)}
 />
 <CodeBlock title="DatePicker with Min/Max Dates">
@@ -412,6 +455,8 @@ export const DatePickerContent: React.FC = () => {
   value=""
   minDate="2025-05-01"
   maxDate="2025-7-31"
+  icon="calendar_month"
+  iconType="material"
   onChange={(val) => console.log('Selected date within range:', val)}
 />
   `}

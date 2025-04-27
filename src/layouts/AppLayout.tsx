@@ -15,7 +15,7 @@ const AppLayout: React.FC = () => {
       {/* PAGE LAYOUT */}
       <div className={`${Styles.page} flex flex-col md:flex-row pt-[56px]`}>
         {/* SIDEBAR */}
-        <div className="w-full md:w-[200px] bg-white border-r border-slate-200 pl-4 pt-4 sticky top-[56px] h-[calc(100vh-56px)]">
+        <div className="w-full md:w-[216px] bg-white border-r border-slate-200 pl-4 pt-4 sticky top-[56px] md:h-[calc(100vh-56px)]">
           <SideBarNav />
         </div>
 

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useThemedStyles } from '../utils/useThemedStyles';
 import type { Theme } from '../themes/Theme';
+import { getStartOfWeek, getEndOfWeek, getStartOfMonth, getEndOfMonth } from '../utils/dateUtils';
 
 interface DatePickerProps {
   mode?: 'single' | 'range';
@@ -14,28 +15,36 @@ interface DatePickerProps {
   dateFormat?: string;
   icon?: React.ReactNode | string;
   iconType?: 'material' | 'svg' | 'url';
-  iconPosition?: 'left' | 'right';
+  iconInputPosition?: 'start' | 'end';
   showInput?: boolean;
-  styles?: Partial<Record<'wrapper' | 'input' | 'iconWrapper' | 'calendar' | 'popup' | 'day' | 'daySelected' | 'dayDisabled' | 'footer' | 'clearButton' | 'todayButton', string>>;
+  styles?: Partial<Record<string, string>>;
   theme?: Partial<Theme>;
+  quickSelects?: ('lastWeek' | 'thisWeek' | 'lastMonth' | 'thisMonth' | 'lastThreeMonths' | 'lastYear')[];
+  showClearButton?: boolean;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({
-  mode = 'single',
-  value,
-  onChange,
-  placeholder = 'Select date',
-  disabled = false,
-  minDate,
-  maxDate,
-  dateFormat = 'YYYY/MM/DD',
-  icon,
-  iconType = 'material',
-  iconPosition = 'right',
-  showInput = true,
-  styles = {},
-  theme,
-}) => {
+const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+const DatePicker: React.FC<DatePickerProps> = (props) => {
+  const {
+    mode = 'single',
+    value,
+    onChange,
+    placeholder = 'Select date',
+    disabled = false,
+    minDate,
+    maxDate,
+    dateFormat = 'YYYY/MM/DD',
+    icon,
+    iconType = 'material',
+    iconInputPosition = 'end',
+    showInput = true,
+    styles = {},
+    theme,
+    quickSelects = [],
+    showClearButton = true,
+  } = props;
+
   const themedStyles = useThemedStyles('DatePicker', theme, styles);
   const [showCalendar, setShowCalendar] = useState(false);
   const [selected, setSelected] = useState<string | { start: string; end: string }>(value || '');
@@ -51,9 +60,39 @@ const DatePicker: React.FC<DatePickerProps> = ({
     if (value !== undefined) setSelected(value);
   }, [value]);
 
-  const toggleCalendar = () => {
-    if (disabled) return;
-    setShowCalendar((prev) => !prev);
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (
+        (inputRef.current && inputRef.current.contains(e.target as Node)) ||
+        (popupRef.current && popupRef.current.contains(e.target as Node)) ||
+        (iconRef.current && iconRef.current.contains(e.target as Node))
+      ) {
+        return;
+      }
+      setShowCalendar(false);
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const toggleCalendar = () => { if (!disabled) setShowCalendar((prev) => !prev); };
+
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -77,89 +116,157 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return true;
   };
 
+
+  const handleClearClick = () => {
+    setSelected(mode === 'single' ? '' : { start: '', end: '' });
+    onChange?.(mode === 'single' ? '' : { start: '', end: '' });
+    setShowCalendar(false);
+  };
+
+  const handleQuickSelect = (range: string) => {
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+  
+    switch (range) {
+      case 'today': {
+        start = end = now;
+        break;
+      }
+      case 'lastWeek': {
+        const lastWeekReference = new Date(now);
+        lastWeekReference.setDate(lastWeekReference.getDate() - 7);
+        start = getStartOfWeek(lastWeekReference);
+        end = getEndOfWeek(lastWeekReference);
+        break;
+      }
+      case 'thisWeek':
+        start = new Date(now);
+        start.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+        end = now;
+        break;
+      
+      case 'lastMonth': {
+        const lastMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        start = getStartOfMonth(lastMonthReference);
+        end = getEndOfMonth(lastMonthReference);
+        break;
+      }
+      case 'thisMonth': {
+        start = getStartOfMonth(now);
+        end = now;
+        break;
+      }
+      case 'lastThreeMonths': {
+        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+        start = threeMonthsAgo;
+        end = now;
+        break;
+      }
+      case 'lastYear': {
+        start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        end = now;
+        break;
+      }
+      default:
+        return;
+    }
+  
+    if (mode === 'single') {
+      setSelected(formatDate(start));
+      onChange?.(formatDate(start));
+    } else {
+      setSelected({ start: formatDate(start), end: formatDate(end) });
+      onChange?.({ start: formatDate(start), end: formatDate(end) });
+    }
+  
+    setShowCalendar(false);
+  };
+  
+  
+  
+
+  const formatQuickSelectLabel = (range: string) => {
+    switch (range) {
+      case 'lastWeek': return 'Last Week';
+      case 'thisWeek': return 'This Week';
+      case 'lastMonth': return 'Last Month';
+      case 'thisMonth': return 'This Month';
+      case 'lastThreeMonths': return 'Last 3 Months';
+      case 'lastYear': return 'Last Year';
+      default: return range;
+    }
+  };
+
   const handleDateClick = (date: Date) => {
-    console.log(date);
     const formatted = formatDate(date);
+
     if (mode === 'single') {
       setSelected(formatted);
       onChange?.(formatted);
       setShowCalendar(false);
-    } else if (mode === 'range') {
-      if (typeof selected === 'string' || !selected.start) {
+    } else {
+      if (typeof selected === 'string') {
         setSelected({ start: formatted, end: '' });
-      } else if (selected.start && !selected.end) {
-        if (new Date(formatted) < new Date(selected.start)) {
-          setSelected({ start: formatted, end: selected.start });
-          onChange?.({ start: formatted, end: selected.start });
+      } else if (typeof selected !== 'string') {
+        if (selected.start && selected.end) {
+          setSelected({ start: formatted, end: '' });
+        } else if (selected.start && !selected.end) {
+          if (new Date(formatted) < new Date(selected.start)) {
+            setSelected({ start: formatted, end: selected.start });
+            onChange?.({ start: formatted, end: selected.start });
+          } else {
+            setSelected({ ...selected, end: formatted });
+            onChange?.({ start: selected.start, end: formatted });
+          }
+          setHoverDate(null);
+          setShowCalendar(false);
         } else {
-          setSelected({ ...selected, end: formatted });
-          onChange?.({ start: selected.start, end: formatted });
+          setSelected({ start: formatted, end: '' });
         }
-        setShowCalendar(false);
       }
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    const parsed = parseInputDate(val);
-    if (parsed) {
-      const formatted = formatDate(parsed);
-      setSelected(formatted);
-      onChange?.(formatted);
-    }
-  };
-
-  const handleOutsideClick = (e: MouseEvent) => {
-    if (
-      (inputRef.current && inputRef.current.contains(e.target as Node)) ||
-      (popupRef.current && popupRef.current.contains(e.target as Node)) ||
-      (iconRef.current && iconRef.current.contains(e.target as Node))
-    ) {
-      return;
-    }
-    setShowCalendar(false);
-  };
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
-
-  const renderIcon = () => {
-    if (!icon) return null;
-    if (iconType === 'material') {
-      return <span className="material-symbols-outlined">{icon}</span>;
-    }
-    if (iconType === 'url') {
-      return <img src={icon as string} alt="" className="w-5 h-5" />;
-    }
-    return icon;
-  };
-
-  const getDaysInMonth = (month: number, year: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
+  const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
 
   const renderDays = () => {
     const days: React.ReactElement[] = [];
-    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-    const totalDays = getDaysInMonth(currentMonth, currentYear);
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+    const prevMonthDays = getDaysInMonth(currentMonth - 1 < 0 ? 11 : currentMonth - 1, currentMonth - 1 < 0 ? currentYear - 1 : currentYear);
 
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`}></div>);
-    }
+    const totalCells = 42;
+    let dayCounter = 1;
+    let nextMonthDayCounter = 1;
 
-    for (let day = 1; day <= totalDays; day++) {
-      const date = new Date(currentYear, currentMonth, day);
-      const isDisabled = !isWithinRange(date);
+    for (let cell = 0; cell < totalCells; cell++) {
+      let date: Date;
+      let inCurrentMonth = true;
+
+      if (cell < firstDayOfMonth) {
+        const day = prevMonthDays - (firstDayOfMonth - 1 - cell);
+        date = new Date(currentYear, currentMonth - 1, day);
+        inCurrentMonth = false;
+      } else if (dayCounter <= daysInMonth) {
+        date = new Date(currentYear, currentMonth, dayCounter);
+        dayCounter++;
+      } else {
+        date = new Date(currentYear, currentMonth + 1, nextMonthDayCounter);
+        nextMonthDayCounter++;
+        inCurrentMonth = false;
+      }
+
       const formatted = formatDate(date);
+      const isDisabled = !isWithinRange(date);
 
-      let isSelected = false;
+      let isStart = false;
+      let isEnd = false;
+      let isInRange = false;
       let isHovered = false;
 
       if (mode === 'single' && selected === formatted) {
-        isSelected = true;
+        isStart = true;
       }
 
       if (mode === 'range' && typeof selected !== 'string') {
@@ -168,37 +275,45 @@ const DatePicker: React.FC<DatePickerProps> = ({
         const endDate = end ? new Date(end) : null;
         const currentDate = new Date(formatted);
 
-        if (startDate && endDate && currentDate >= startDate && currentDate <= endDate) {
-          isSelected = true;
-        }
-
         if (startDate && !endDate && hoverDate) {
           const hover = new Date(hoverDate);
-          if (
-            (currentDate >= startDate && currentDate <= hover) ||
-            (currentDate <= startDate && currentDate >= hover)
-          ) {
+          if ((currentDate >= startDate && currentDate <= hover) || (currentDate <= startDate && currentDate >= hover)) {
             isHovered = true;
           }
         }
+
+        if (startDate && endDate && currentDate >= startDate && currentDate <= endDate) {
+          isInRange = true;
+        }
+
+        if (startDate && formatted === formatDate(startDate)) {
+          isStart = true;
+        }
+
+        if (endDate && formatted === formatDate(endDate)) {
+          isEnd = true;
+        }
       }
+
+      let bgColor = '';
+      if (isStart || isEnd || isInRange) {
+        bgColor = themedStyles.daySelected;
+      } else if (isHovered) {
+        bgColor = themedStyles.dayInRangeHover;
+      }
+
+      const textColor = inCurrentMonth ? themedStyles.day : themedStyles.dayOutsideMonth;
 
       days.push(
         <button
-          key={day}
-          className={`${themedStyles.day} ${isSelected || isHovered ? themedStyles.daySelected : ''} ${isDisabled ? themedStyles.dayDisabled : ''}`}
-          onClick={() => {
-            if (!isDisabled) handleDateClick(date);
-          }}
+          key={`day-${cell}`}
+          className={`w-full aspect-square flex items-center justify-center border border-stone-100 ${textColor} ${bgColor} ${isDisabled ? themedStyles.dayDisabled : ''}`}
+          onClick={() => !isDisabled && handleDateClick(date)}
+          onMouseEnter={() => !isDisabled && setHoverDate(formatDate(date))}
+          onMouseLeave={() => !isDisabled && setHoverDate(null)}
           disabled={isDisabled}
-          onMouseEnter={() => {
-            if (!isDisabled) setHoverDate(formatted);
-          }}
-          onMouseLeave={() => {
-            if (!isDisabled) setHoverDate(null);
-          }}
         >
-          {day}
+          {date.getDate()}
         </button>
       );
     }
@@ -206,83 +321,86 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return days;
   };
 
-  const handleTodayClick = () => {
-    const now = new Date();
-    const formatted = formatDate(now);
-    if (mode === 'single') {
-      setSelected(formatted);
-      onChange?.(formatted);
-    } else if (mode === 'range') {
-      setSelected({ start: formatted, end: formatted });
-      onChange?.({ start: formatted, end: formatted });
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (iconType === 'material') {
+      return <span className="material-symbols-outlined text-[20px] text-slate-400">{icon}</span>;
     }
-    setShowCalendar(false);
-  };
-
-  const handleClearClick = () => {
-    setSelected(mode === 'single' ? '' : { start: '', end: '' });
-    onChange?.(mode === 'single' ? '' : { start: '', end: '' });
-    setShowCalendar(false);
+    if (iconType === 'url') {
+      return <img src={icon as string} alt="" className="w-5 h-5" />;
+    }
+    return icon;
   };
 
   return (
     <div className={themedStyles.wrapper}>
-      {icon && iconPosition === 'left' && (
-        <div className={themedStyles.iconWrapper} ref={iconRef} onClick={toggleCalendar}>
-          {renderIcon()}
+      {showInput ? (
+        <div className="relative w-full">
+          {icon && iconInputPosition === 'start' && (
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 cursor-pointer" onClick={toggleCalendar}>
+              {renderIcon()}
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="text"
+            className={`w-full ${icon ? (iconInputPosition === 'start' ? 'pl-10' : 'pr-10') : ''} ${themedStyles.input}`}
+            placeholder={placeholder}
+            disabled={disabled}
+            value={typeof selected === 'string' ? selected : selected.start && selected.end ? `${selected.start} - ${selected.end}` : selected.start}
+            onChange={(e) => {
+                const val = e.target.value.trim();
+                if (val === '') {
+                  setSelected(mode === 'single' ? '' : { start: '', end: '' });
+                  onChange?.(mode === 'single' ? '' : { start: '', end: '' });
+                  return;
+                }
+                const parsed = parseInputDate(val);
+                if (parsed) {
+                  const formatted = formatDate(parsed);
+                  setSelected(formatted);
+                  onChange?.(formatted);
+                }
+              }}
+              
+            onFocus={() => setShowCalendar(true)}
+          />
+          {icon && iconInputPosition === 'end' && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer" onClick={toggleCalendar}>
+              {renderIcon()}
+            </div>
+          )}
         </div>
+      ) : (
+        icon && (
+          <div className={themedStyles.iconWrapper} ref={iconRef} onClick={toggleCalendar}>
+            {renderIcon()}
+          </div>
+        )
       )}
-      {showInput && (
-        <input
-          ref={inputRef}
-          type="text"
-          className={themedStyles.input}
-          placeholder={placeholder}
-          disabled={disabled}
-          value={typeof selected === 'string' ? selected : selected.start}
-          onChange={handleInputChange}
-          onFocus={() => setShowCalendar(true)}
-        />
-      )}
-      {icon && iconPosition === 'right' && (
-        <div className={themedStyles.iconWrapper} ref={iconRef} onClick={toggleCalendar}>
-          {renderIcon()}
-        </div>
-      )}
+
       {showCalendar && (
         <div className={themedStyles.popup} ref={popupRef}>
-          <div className="flex justify-between items-center mb-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (currentMonth === 0) {
-                  setCurrentMonth(11);
-                  setCurrentYear(currentYear - 1);
-                } else {
-                  setCurrentMonth(currentMonth - 1);
-                }
-              }}
-              className="text-slate-600 hover:text-blue-600"
-            >
-              ◀
+          <div className={themedStyles.header}>
+            <button type="button" onClick={handlePrevMonth} className={themedStyles.monthNavButton}>
+              <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <div className="font-semibold text-slate-700">
+            <div className={themedStyles.monthLabel}>
               {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} {currentYear}
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (currentMonth === 11) {
-                  setCurrentMonth(0);
-                  setCurrentYear(currentYear + 1);
-                } else {
-                  setCurrentMonth(currentMonth + 1);
-                }
-              }}
-              className="text-slate-600 hover:text-blue-600"
-            >
-              ▶
+            <button type="button" onClick={handleNextMonth} className={themedStyles.monthNavButton}>
+              <span className="material-symbols-outlined">arrow_forward</span>
             </button>
+          </div>
+
+          <div className={themedStyles.monthDivider} />
+
+       
+
+          <div className={themedStyles.dayLabelsRow}>
+            {dayLabels.map((label, idx) => (
+              <div key={idx} className={themedStyles.dayLabel}>{label}</div>
+            ))}
           </div>
 
           <div className={themedStyles.calendar}>
@@ -290,9 +408,29 @@ const DatePicker: React.FC<DatePickerProps> = ({
           </div>
 
           <div className={themedStyles.footer}>
-            <button className={themedStyles.todayButton} onClick={handleTodayClick}>Today</button>
+  <div className="flex flex-wrap gap-2">
+    {quickSelects?.map((range) => (
+    <div className={themedStyles.quickSelectButtonWrapper}>
+      <button
+        key={range}
+        className={themedStyles.quickSelectButton}
+        onClick={() => handleQuickSelect(range)}
+        type="button"
+      >
+        {formatQuickSelectLabel(range)}
+      </button>
+    </div>
+    ))}
+    {showClearButton && (
+        <div className={themedStyles.clearButtonWrapper}>
+
             <button className={themedStyles.clearButton} onClick={handleClearClick}>Clear</button>
-          </div>
+        </div>
+    )}
+  </div>
+</div>
+
+
         </div>
       )}
     </div>
