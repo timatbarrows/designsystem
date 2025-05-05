@@ -79,8 +79,45 @@ export const defaultTheme: Theme = {
     clearButton: 'text-slate-500 hover:bg-slate-100 text-sm font-roboto border border-slate-300 rounded-md px-3 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300',
     quickSelectButtonWrapper: 'flex',
     quickSelectButton: 'text-blue-600 hover:bg-blue-100 text-xs font-roboto border border-blue-100 rounded-md px-3 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300',
-
   },
-  
-   
+  FileUploader: {
+    wrapper: 'border-2 border-dashed border-slate-300 rounded-md p-6 flex flex-col items-center justify-center gap-4 bg-white cursor-pointer transition-colors',
+    dragActive: 'border-blue-400 bg-blue-50',
+    text: 'text-slate-500 text-center text-sm font-roboto',
+    browseButtonWrapper: 'flex justify-center mt-4',
+    browseButton: 'bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2',
+    errorText: 'text-red-500 text-xs mt-2 font-roboto text-center',
+  },
+  modal: {
+  container: 'fixed inset-0 z-[9999] flex items-center justify-center p-4',
+  overlay: 'absolute inset-0 bg-black/50 transition-opacity',
+  modalCloseButton: 'absolute top-0 right-0 pt-4 pr-4 cursor-pointer',
+  content: 'relative z-10 bg-white rounded-lg p-8 max-w-[80%] w-full max-h-[80%] overflow-auto shadow-lg',
+  toasterWrapper: 'fixed z-[9999] flex items-center justify-center p-4',
+  toasterContent: 'bg-white rounded-md shadow-md overflow-auto flex items-center justify-between gap-2 w-full min-h-[25px] p-2',
+  toasterText: 'flex items-center align-middle gap-2 overflow-hidden text-ellipsis whitespace-nowrap p-2',
+  toasterCloseButton: 'flex items-center justify-center cursor-pointer p-2',
+  animateInTopLeft: 'animate-fade-in-down',
+  animateOutTopLeft: 'animate-fade-out-up',
+  animateInTopCenter: 'animate-fade-in-down',
+  animateOutTopCenter: 'animate-fade-out-up',
+  animateInTopRight: 'animate-fade-in-down',
+  animateOutTopRight: 'animate-fade-out-up',
+  animateInBottomLeft: 'animate-fade-in-up',
+  animateOutBottomLeft: 'animate-fade-out-down',
+  animateInBottomCenter: 'animate-fade-in-up',
+  animateOutBottomCenter: 'animate-fade-out-down',
+  animateInBottomRight: 'animate-fade-in-up',
+  animateOutBottomRight: 'animate-fade-out-down',
+
+  animateIn: 'animate-fade-in',
+  animateOut: 'animate-fade-out',
+       toasterPositionTopLeft: 'top-4 left-4',
+    toasterPositionTopCenter: 'top-4 left-1/2 transform -translate-x-1/2',
+    toasterPositionTopRight: 'top-4 right-4',
+    toasterPositionBottomLeft: 'bottom-4 left-4',
+    toasterPositionBottomCenter: 'bottom-4 left-1/2 transform -translate-x-1/2',
+    toasterPositionBottomRight: 'bottom-4 right-4',
+    
+  }
 };

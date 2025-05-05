@@ -20,8 +20,8 @@ interface NavItem {
 const navData: NavItem[] = [
   {
     label: 'General',
-    link: '/home',
-    children: [{ label: 'Navigation', link: '/home' }],
+    link: '/',
+    children: [{ label: 'Navigation', link: '/' }],
   },
   {
     label: 'Forms',
@@ -32,7 +32,8 @@ const navData: NavItem[] = [
       { label: 'Radio Button', link: '/forms#radiobutton' },
       { label: 'Toggle', link: '/forms#toggle' },
       { label: 'Button', link: '/forms#button' },
-      { label: 'Date Picker', link: '/forms#date'}
+      { label: 'Date Picker', link: '/forms#date'},
+      { label: 'File Uploader', link: '/forms#file'}
     ],
   },
 ];

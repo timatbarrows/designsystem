@@ -20,7 +20,7 @@ const AppLayout: React.FC = () => {
         </div>
 
         {/* MAIN CONTENT */}
-        <div className="flex-1 p-10 pt-6 overflow-y-auto">
+        <div className="flex-1 p-2 md:p-10 md:pt-6 overflow-y-auto">
           <Outlet />
         </div>
       </div>

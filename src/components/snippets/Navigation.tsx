@@ -40,7 +40,7 @@ const Navigation: React.FC = () => {
   return (
     <>
         <div>
-        <div className={Styles.h1}>Navigation</div>
+        <div className={Styles['app-title']}>NAVIGATION</div>
         <div className={`${Styles.hr} mb-6`}></div>
         <div className={`${Styles.h2} mb-4`}>Default Tab Nav</div>
         <TabNav

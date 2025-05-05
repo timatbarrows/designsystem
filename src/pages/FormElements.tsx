@@ -8,6 +8,8 @@ import CheckBox from '../components/forms/CheckBox';
 import Toggle from '../components/forms/Toggle';
 import Button from '../components/forms/Button';
 import DatePicker from '../components/forms/DatePicker';
+import DatePickerDoc from './DatePickerDoc';
+import FileUploaderDoc from './FileUploaderDoc';
 /**
  * FormElements.tsx
  *
@@ -39,7 +41,11 @@ const FormElements: React.FC = () => {
         <ButtonContent />
       </div>
       <div id="date" className="scroll-mt-[85px]">
-        <DatePickerContent />
+        <div>Date Picker Doc</div>
+        <DatePickerDoc />
+      </div>
+      <div id="file" className="scroll-mt-[85px]">
+        <FileUploaderDoc />
       </div>
       
       
@@ -380,8 +386,9 @@ export const DatePickerContent: React.FC = () => {
 <DatePicker
         mode="range"
         placeholder="Select a date range"
-        quickSelects={['lastWeek', 'thisWeek', 'lastMonth']}
+        quickSelects={['lastWeek', 'lastMonth', 'thisMonth']}
         showClearButton={false}
+        onChange={(date) => console.log(date)}
       />
 <CodeBlock title='Date Range With Quick Selects'>
     {
@@ -466,3 +473,6 @@ export const DatePickerContent: React.FC = () => {
         </>
     )
 }
+
+
+

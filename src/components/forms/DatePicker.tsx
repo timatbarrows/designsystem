@@ -118,10 +118,11 @@ const DatePicker: React.FC<DatePickerProps> = (props) => {
 
 
   const handleClearClick = () => {
-    setSelected(mode === 'single' ? '' : { start: '', end: '' });
-    onChange?.(mode === 'single' ? '' : { start: '', end: '' });
+    updateSelected(mode === 'single' ? '' : { start: '', end: '' });
     setShowCalendar(false);
   };
+  
+
 
   const handleQuickSelect = (range: string) => {
     const now = new Date();
@@ -129,61 +130,67 @@ const DatePicker: React.FC<DatePickerProps> = (props) => {
     let end: Date;
   
     switch (range) {
-      case 'today': {
+      case 'today':
         start = end = now;
         break;
-      }
-      case 'lastWeek': {
-        const lastWeekReference = new Date(now);
-        lastWeekReference.setDate(lastWeekReference.getDate() - 7);
-        start = getStartOfWeek(lastWeekReference);
-        end = getEndOfWeek(lastWeekReference);
+      case 'lastWeek':
+        start = getStartOfWeek(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7));
+        end = getEndOfWeek(start);
         break;
-      }
       case 'thisWeek':
-        start = new Date(now);
-        start.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+        start = getStartOfWeek(now);
         end = now;
         break;
-      
-      case 'lastMonth': {
-        const lastMonthReference = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        start = getStartOfMonth(lastMonthReference);
-        end = getEndOfMonth(lastMonthReference);
+      case 'lastMonth':
+        start = getStartOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+        end = getEndOfMonth(start);
         break;
-      }
-      case 'thisMonth': {
+      case 'thisMonth':
         start = getStartOfMonth(now);
         end = now;
         break;
-      }
-      case 'lastThreeMonths': {
-        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-        start = threeMonthsAgo;
+      case 'lastThreeMonths':
+        start = getStartOfMonth(new Date(now.getFullYear(), now.getMonth() - 3, 1));
         end = now;
         break;
-      }
-      case 'lastYear': {
+      case 'lastYear':
         start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
         end = now;
         break;
-      }
       default:
         return;
     }
   
     if (mode === 'single') {
-      setSelected(formatDate(start));
-      onChange?.(formatDate(start));
-    } else {
-      setSelected({ start: formatDate(start), end: formatDate(end) });
-      onChange?.({ start: formatDate(start), end: formatDate(end) });
-    }
-  
+        updateSelected(formatDate(start));
+      } else {
+        updateSelected({ start: formatDate(start), end: formatDate(end) });
+      }
+      setShowCalendar(false);
+      
     setShowCalendar(false);
   };
   
   
+  const updateSelected = (newValue: string | { start: string; end: string }) => {
+    setSelected(newValue);
+    onChange?.(newValue);
+  
+    // Adjust calendar view if possible
+    if (typeof newValue === 'string') {
+      const parsed = parseInputDate(newValue);
+      if (parsed) {
+        setCurrentMonth(parsed.getMonth());
+        setCurrentYear(parsed.getFullYear());
+      }
+    } else if (newValue.start) {
+      const parsed = parseInputDate(newValue.start);
+      if (parsed) {
+        setCurrentMonth(parsed.getMonth());
+        setCurrentYear(parsed.getFullYear());
+      }
+    }
+  };
   
 
   const formatQuickSelectLabel = (range: string) => {
@@ -200,34 +207,32 @@ const DatePicker: React.FC<DatePickerProps> = (props) => {
 
   const handleDateClick = (date: Date) => {
     const formatted = formatDate(date);
-
+  
     if (mode === 'single') {
-      setSelected(formatted);
-      onChange?.(formatted);
+      updateSelected(formatted);
       setShowCalendar(false);
     } else {
       if (typeof selected === 'string') {
-        setSelected({ start: formatted, end: '' });
+        updateSelected({ start: formatted, end: '' });
       } else if (typeof selected !== 'string') {
         if (selected.start && selected.end) {
-          setSelected({ start: formatted, end: '' });
+          updateSelected({ start: formatted, end: '' });
         } else if (selected.start && !selected.end) {
           if (new Date(formatted) < new Date(selected.start)) {
-            setSelected({ start: formatted, end: selected.start });
-            onChange?.({ start: formatted, end: selected.start });
+            updateSelected({ start: formatted, end: selected.start });
           } else {
-            setSelected({ ...selected, end: formatted });
-            onChange?.({ start: selected.start, end: formatted });
+            updateSelected({ start: selected.start, end: formatted });
           }
           setHoverDate(null);
           setShowCalendar(false);
         } else {
-          setSelected({ start: formatted, end: '' });
+          updateSelected({ start: formatted, end: '' });
         }
       }
     }
   };
-
+  
+  
   const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
 
   const renderDays = () => {
@@ -409,18 +414,18 @@ const DatePicker: React.FC<DatePickerProps> = (props) => {
 
           <div className={themedStyles.footer}>
   <div className="flex flex-wrap gap-2">
-    {quickSelects?.map((range) => (
-    <div className={themedStyles.quickSelectButtonWrapper}>
-      <button
-        key={range}
-        className={themedStyles.quickSelectButton}
-        onClick={() => handleQuickSelect(range)}
-        type="button"
-      >
-        {formatQuickSelectLabel(range)}
-      </button>
-    </div>
-    ))}
+  {quickSelects?.map((range) => (
+  <div key={range} className={themedStyles.quickSelectButtonWrapper}>
+    <button
+      className={themedStyles.quickSelectButton}
+      onClick={() => handleQuickSelect(range)}
+      type="button"
+    >
+      {formatQuickSelectLabel(range)}
+    </button>
+  </div>
+))}
+
     {showClearButton && (
         <div className={themedStyles.clearButtonWrapper}>
 
