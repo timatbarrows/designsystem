@@ -21,7 +21,10 @@ const navData: NavItem[] = [
   {
     label: 'General',
     link: '/',
-    children: [{ label: 'Navigation', link: '/' }],
+    children: [
+      { label: 'Navigation', link: '/' },
+      { label: 'Modals', link: '/home#modals' },
+    ],
   },
   {
     label: 'Forms',

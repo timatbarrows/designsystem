@@ -1,5 +1,6 @@
 // components/forms/Button.tsx
 import React from 'react';
+import clsx from 'clsx';
 import { useThemedStyles } from '../utils/useThemedStyles';
 import type { Theme } from '../themes/Theme';
 
@@ -15,7 +16,7 @@ interface ButtonProps {
   icon?: React.ReactNode | string;
   iconPosition?: 'left' | 'right';
   materialSymbol?: string;
-  materialFontSize?: number; // <-- NEW
+  materialFontSize?: number;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -28,10 +29,13 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   iconPosition = 'right',
   materialSymbol,
-  materialFontSize = 24, // <-- Default to 24px if missing
+  materialFontSize = 24,
 }) => {
+  console.log('Custom styles:', styles);
   const themedStyles = useThemedStyles('Button', theme, styles);
-
+  
+  
+  // Determine shape class (rectangle, pill, or circle)
   const shapeClass =
     type === 'circle'
       ? themedStyles.circle
@@ -39,17 +43,24 @@ const Button: React.FC<ButtonProps> = ({
       ? themedStyles.pill
       : themedStyles.rectangle;
 
-  const baseClass = `${themedStyles.base} ${shapeClass}`;
-  const stateClass = disabled ? themedStyles.disabled : themedStyles.active;
+  // Merge base and shape classes
+  const baseClass = clsx(themedStyles.base, shapeClass);
 
+  // Use custom active style if provided and not disabled, otherwise fall back to default
+  const stateClass = clsx(
+    themedStyles.active,
+    !disabled && styles.active,
+    disabled && themedStyles.disabled
+  );
+  
+
+  // Render material symbol, image, or custom icon
   const renderIcon = () => {
     if (materialSymbol) {
       return (
         <span
           className={themedStyles.materialSymbol}
-          style={{
-            fontSize: `${materialFontSize}px`,
-          }}
+          style={{ fontSize: `${materialFontSize}px` }}
         >
           {materialSymbol}
         </span>
@@ -57,13 +68,7 @@ const Button: React.FC<ButtonProps> = ({
     }
     if (!icon) return null;
     if (typeof icon === 'string') {
-      return (
-        <img
-          src={icon}
-          alt=""
-          className="w-5 h-5"
-        />
-      );
+      return <img src={icon} alt="" className="w-5 h-5" />;
     }
     return icon;
   };
@@ -73,7 +78,7 @@ const Button: React.FC<ButtonProps> = ({
       type="button"
       onClick={!disabled ? onClick : undefined}
       disabled={disabled}
-      className={`${baseClass} ${stateClass}`}
+      className={clsx(baseClass, stateClass)} // Fully merged class names
     >
       <div className={themedStyles.content}>
         {iconPosition === 'left' && renderIcon()}

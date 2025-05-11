@@ -11,6 +11,7 @@ const App: React.FC = () => {
       <Route path="/" element={<AppLayout />}>
         <Route index element={<Home />} />
         <Route path='forms' element={<FormElements />} />
+        <Route path="*" element={<Home />} />
       </Route>
     </Routes>
   );

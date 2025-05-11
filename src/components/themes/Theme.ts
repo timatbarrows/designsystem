@@ -43,4 +43,5 @@ export interface Theme {
   DatePicker: ComponentStyle;
   FileUploader: ComponentStyle;
   modal: ModalStyle;
+  Select: ComponentStyle;
 }

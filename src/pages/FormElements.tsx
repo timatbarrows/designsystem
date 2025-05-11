@@ -10,6 +10,7 @@ import Button from '../components/forms/Button';
 import DatePicker from '../components/forms/DatePicker';
 import DatePickerDoc from './DatePickerDoc';
 import FileUploaderDoc from './FileUploaderDoc';
+import SelectDoc from './SelectDoc';
 /**
  * FormElements.tsx
  *
@@ -22,7 +23,10 @@ const FormElements: React.FC = () => {
     <div className="space-y-4">
       <div className={Styles['app-title']}>FORMS</div>
       <div className={`${Styles.hr} mb-4`}></div>
-      <div id="input">
+      <div id="select" className="scroll-mt-[85px]">
+        <SelectDoc />
+      </div>
+      <div id="input">  
         <InputContent />
       </div>
       <div id="textarea" className="scroll-mt-[85px]">
@@ -41,7 +45,6 @@ const FormElements: React.FC = () => {
         <ButtonContent />
       </div>
       <div id="date" className="scroll-mt-[85px]">
-        <div>Date Picker Doc</div>
         <DatePickerDoc />
       </div>
       <div id="file" className="scroll-mt-[85px]">

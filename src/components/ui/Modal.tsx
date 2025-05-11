@@ -1,5 +1,4 @@
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 import { useThemedStyles } from '../utils/useThemedStyles';
 import type { Theme } from '../themes/Theme';
@@ -15,6 +14,7 @@ export type ModalPosition =
   | 'bottomCenter'
   | 'bottomRight';
 
+// Props for Modal component
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +32,7 @@ type ModalProps = {
   autoDismissAfterSeconds?: number;
 };
 
+// Close icon renderer based on type
 function RenderCloseIcon({
   icon = 'cancel',
   type = 'material',
@@ -74,8 +75,23 @@ const Modal: React.FC<ModalProps> = ({
   const themedStyles = useThemedStyles('modal', theme, styles);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  // Local visibility state to manage entry/exit animation
+  const [visible, setVisible] = useState<boolean>(isOpen);
+  const [showAnimation, setShowAnimation] = useState<boolean>(isOpen);
+
+  // Sync visibility when `isOpen` changes
   useEffect(() => {
-    if (!isOpen || type !== 'default') return;
+    if (isOpen && !visible) {
+      setVisible(true);
+      setShowAnimation(true);
+    } else if (!isOpen && visible) {
+      setShowAnimation(false); // triggers exit animation
+    }
+  }, [isOpen, visible]);
+
+  // Escape key listener for default modals
+  useEffect(() => {
+    if (!visible || type !== 'default') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -83,32 +99,58 @@ const Modal: React.FC<ModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, type, onClose]);
+  }, [visible, type, onClose]);
 
+  // Auto-dismiss after timeout if specified
   useEffect(() => {
-    if (!isOpen || !autoDismissAfterSeconds) return;
+    if (!visible || !autoDismissAfterSeconds) return;
 
     const timeout = setTimeout(() => {
       onClose();
     }, autoDismissAfterSeconds * 1000);
 
     return () => clearTimeout(timeout);
-  }, [isOpen, autoDismissAfterSeconds, onClose]);
+  }, [visible, autoDismissAfterSeconds, onClose]);
 
-  if (!isOpen) return null;
+  // Animation end handler
+  const handleAnimationEnd = () => {
+    if (!isOpen) {
+      setTimeout(() => setVisible(false), 50);
+    }
+  };
+
+  // Do not render if not visible
+  if (!visible) return null;
 
   const toasterKey = `toasterPosition${capitalize(position)}` as keyof typeof themedStyles;
+  const animateInKey = `animateIn${capitalize(position)}` as keyof typeof themedStyles;
+  const animateOutKey = `animateOut${capitalize(position)}` as keyof typeof themedStyles;
 
   return (
     <>
+      {/* Default Modal */}
       {type === 'default' && (
         <div className={clsx(themedStyles.container)} role="dialog" aria-modal="true">
-          <div className={themedStyles.overlay} onClick={onClose} />
-          <div className={themedStyles.content} ref={modalRef}>
+          <div
+            className={clsx(
+              themedStyles.overlay,
+              isOpen ? themedStyles.animateIn : themedStyles.animateOut
+            )}
+            onClick={onClose}
+            onAnimationEnd={handleAnimationEnd}
+          />
+          <div
+            className={clsx(
+              themedStyles.content,
+              isOpen ? themedStyles.animateIn : themedStyles.animateOut
+            )}
+            onAnimationEnd={handleAnimationEnd}
+            ref={modalRef}
+          >
             <RenderCloseIcon
-              icon={closeButton?.value || 'cancel'}
+              icon={closeButton?.value || 'close'}
               type={closeButton?.type || 'material'}
-              size={closeButton?.size || 24}
+              size={closeButton?.size || 36}
               className={clsx(themedStyles.modalCloseButton, closeButton?.className)}
               onClick={onClose}
             />
@@ -117,30 +159,33 @@ const Modal: React.FC<ModalProps> = ({
         </div>
       )}
 
-{type === 'toaster' && (
-  <div
-    className={clsx(themedStyles.toasterWrapper, themedStyles[toasterKey])}
-    role="alert"
-  >
-    <div className={clsx(themedStyles.toasterContent)} ref={modalRef}>
-      <div className={clsx(themedStyles.toasterText)}>
-        {children}
-      </div>
-      <RenderCloseIcon
-        icon={closeButton?.value || 'close'}
-        type={closeButton?.type || 'material'}
-        size={closeButton?.size || 20}
-        className={clsx(themedStyles.toasterCloseButton, closeButton?.className)}
-        onClick={onClose}
-      />
-    </div>
-  </div>
-)}
-
+      {/* Toaster Modal */}
+      {type === 'toaster' && visible && (
+        <div className={clsx(themedStyles.toasterWrapper, themedStyles[toasterKey])} role="alert">
+          <div
+            className={clsx(
+              themedStyles.toasterContent,
+              showAnimation ? themedStyles[animateInKey] : themedStyles[animateOutKey]
+            )}
+            onAnimationEnd={handleAnimationEnd}
+            ref={modalRef}
+          >
+            <div className={clsx(themedStyles.toasterText)}>{children}</div>
+            <RenderCloseIcon
+              icon={closeButton?.value || 'close'}
+              type={closeButton?.type || 'material'}
+              size={closeButton?.size || 20}
+              className={clsx(themedStyles.toasterCloseButton, closeButton?.className)}
+              onClick={onClose}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
+// Capitalizes the first letter of the position string
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }

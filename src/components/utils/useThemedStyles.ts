@@ -1,6 +1,5 @@
 import { defaultTheme } from '../themes/defaultTheme';
 import { Theme } from '../themes/Theme';
-import { twMerge } from 'tailwind-merge';
 
 export const useThemedStyles = (
   component: keyof Theme,
@@ -12,7 +11,7 @@ export const useThemedStyles = (
   return Object.fromEntries(
     Object.entries(base).map(([key, baseClass]) => {
       const overrideClass = overrides?.[key] ?? '';
-      return [key, twMerge(`${baseClass} ${overrideClass}`)];
+      return [key, `${baseClass} ${overrideClass}`.trim()];
     })
   );
 };
